@@ -3,6 +3,7 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import wordpunct_tokenize
 from sklearn.feature_extraction.text import CountVectorizer
+from nltk.stem.lancaster import LancasterStemmer
 
 class PreprocessDocs:
     def __init__(self):
@@ -19,6 +20,7 @@ class PreprocessDocs:
         """Returns vocabulary from a list of documents"""
         stop_words = set(stopwords.words('english'))
         stop_words.update(['.', ',', '"', "'", '?', '!', ':', ';', '(', ')', '[', ']', '{', '}']) # remove it if you need punctuation
+        st = LancasterStemmer()
         word_list = []
         for doc in self.doc_list:
             new_words = [i.lower() for i in wordpunct_tokenize(doc) if i.lower() not in stop_words]
