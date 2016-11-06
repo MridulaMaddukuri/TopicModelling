@@ -22,6 +22,8 @@ class PreprocessDocs:
         word_list = []
         for doc in self.doc_list:
             new_words = [i.lower() for i in wordpunct_tokenize(doc) if i.lower() not in stop_words]
+            # If you want to remove redundancy in terms of pularity etc
+            #new_words2 = [(st.stem(i)).lower() for i in wordpunct_tokenize(doc) if i.lower() not in stop_words]
             word_list = word_list + new_words
         #print len(word_list)
         self.vocab= list(set(word_list))
