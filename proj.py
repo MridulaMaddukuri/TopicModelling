@@ -5,6 +5,9 @@ from nltk.tokenize import wordpunct_tokenize
 from sklearn.feature_extraction.text import CountVectorizer
 from nltk.stem.lancaster import LancasterStemmer
 from sklearn.decomposition import LatentDirichletAllocation
+import matplotlib.pyplot as plt
+import matplotlib
+import pandas
 
 class PreprocessDocs:
     def __init__(self):
@@ -66,11 +69,32 @@ class LDASklearn:
         tf = tf_vectorizer.fit_transform(self.data_samples)
         print "Fitting LDA models with tf features"
         lda = LatentDirichletAllocation(n_topics=self.n_topics, max_iter = 5, learning_method='online', learning_offset=50., random_state=0)
-        lda.fit(tf)
-        print "\nTopics in LDA model:"
-        tf_feature_names = tf_vectorizer.get_feature_names()
-        self.print_top_words(lda, tf_feature_names, self.n_top_words)
-    
+        self.pos = lda.fit_transform(tf)
+        self.xs, self.ys = self.pos[:, 0], self.pos[:,1]
+
+    def plot_lda_results(self):
+        ax = plt.subplot(111)
+        for label,marker,color in zip(
+            range(0,10),('^', 's', 'o','^', 'o', 'o','^', '^', 'o','s'),('blue', 'red', 'green','blue', 'red', 'green','blue', 'red', 'green', 'yellow')):
+            plt.scatter(x=self.xs , y=self.ys, marker=marker, color=color, alpha=0.5,label=label)
+        plt.xlabel('LD1')
+        plt.ylabel('LD2')
+
+        leg = plt.legend(loc='upper right', fancybox=True)
+        leg.get_frame().set_alpha(0.5)
+        plt.title('LDA: Result')
+        # hide axis ticks
+        plt.tick_params(axis="both", which="both", bottom="off", top="off", labelbottom="on", left="off", right="off", labelleft="on")
+
+        # remove axis spines
+        ax.spines["top"].set_visible(False)  
+        ax.spines["right"].set_visible(False)
+        ax.spines["bottom"].set_visible(False)
+        ax.spines["left"].set_visible(False)    
+        plt.grid()
+        plt.tight_layout
+        plt.show()
+
         
 if __name__ == "__main__":
     new = PreprocessDocs()
@@ -80,6 +104,71 @@ if __name__ == "__main__":
     #print new.makeDocVocabMatrix()
     n = LDASklearn()
     n.ldafit()
+    n.plot_lda_results()
     
     
+'''#set up cluster names using a dict
+cluster_names = {0: 'Family, home, war', 
+                 1: 'Police, killed, murders', 
+                 2: 'Father, New York, brothers', 
+                 3: 'Dance, singing, love', 
+                 4: 'Killed, soldiers, captain'}
+
+#create data frame that has the result of the MDS plus the cluster numbers and titles
+df = pd.DataFrame(dict(x=xs, y=ys, label=clusters, title=titles)) 
+
+#group by cluster
+groups = df.groupby('label')
+
+
+# set up plot
+fig, ax = plt.subplots(figsize=(17, 9)) # set size
+ax.margins(0.05) # Optional, just adds 5% padding to the autoscaling
+
+#iterate through groups to layer the plot
+#note that I use the cluster_name and cluster_color dicts with the 'name' lookup to return the appropriate color/label
+for name, group in groups:
+    ax.plot(group.x, group.y, marker='o', linestyle='', ms=12, 
+            label=cluster_names[name], color=cluster_colors[name], 
+            mec='none')
+    ax.set_aspect('auto')
+    ax.tick_params(\
+        axis= 'x',          # changes apply to the x-axis
+        which='both',      # both major and minor ticks are affected
+        bottom='off',      # ticks along the bottom edge are off
+        top='off',         # ticks along the top edge are off
+        labelbottom='off')
+    ax.tick_params(\
+        axis= 'y',         # changes apply to the y-axis
+        which='both',      # both major and minor ticks are affected
+        left='off',      # ticks along the bottom edge are off
+        top='off',         # ticks along the top edge are off
+        labelleft='off')
+    
+ax.legend(numpoints=1)  #show legend with only 1 point
+
+#add label in x,y position with the label as the film title
+for i in range(len(df)):
+    ax.text(df.ix[i]['x'], df.ix[i]['y'], df.ix[i]['title'], size=8)  
+
+    
+    
+plt.show() #show the plot
+
+#uncomment the below to save the plot if need be
+#plt.savefig('clusters_small_noaxes.png', dpi=200)'''
+
+'''        #print "\nTopics in LDA model:"
+        #tf_feature_names = tf_vectorizer.get_feature_names()
+        #self.print_top_words(lda, tf_feature_names, self.n_top_words)
+        xs, ys = pos[:, 0], pos[:,1]
+        #set up colors per clusters using a dict
+        cluster_colors = {0: '#lb9e77', 1: '#d95f02', 2: '#7570b3', 3: '#e7298a', 4: '#66a61e'}
+        #Cluster names can be added as dictionary
+        df = pandas.DataFrame(dict(x=xs, y=ys,))
+        # set up plot
+        fig, ax = plt.subplots(figsize=(17, 9)) # set size
+        ax.margins(0.05) 
+        ax.plot(df.x, df.y, marker='o',linestyle= '',ms =12)
+        plt.show()'''
     
